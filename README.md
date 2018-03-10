@@ -452,6 +452,497 @@ AI基础：
 
 currentHP 把丧尸中枪时玩家所在的方向保存在 damageDirection 字段中，其它脚本读取 ZombieHealth 的 currentHP 和damageDirection 字段，可以获得丧尸的生命值和中枪情况。
 
+**10.丧尸生命值管理**
+
+丧尸被玩家攻击时，减少生命值；
+
+敌人受伤时，出现流血效果，并发出受伤音效；
+
+若敌人死亡，敌人会倒地，同时玩家得分增加。
+
+```
+using UnityEngine;
+using System.Collections;
+
+public class ZombieHealth :MonoBehaviour{
+
+	public int currentHP = 10;		
+	public int maxHP = 10;			
+	public int killScore = 5;		
+	public AudioClip enemyHurtAudio;		
+
+	[HideInInspector]
+	public Vector3 damageDirection = Vector3.zero;	
+	[HideInInspector]
+	public bool getDamaged = false;					
+
+	public bool IsAlive {
+		get {
+			return currentHP > 0;
+		}
+	}
+
+	public void TakeDamage(int damage, Vector3 shootPosition){
+		if (!IsAlive)
+			return;
+		currentHP -= damage;
+		if (currentHP <= 0 ) currentHP = 0;
+		if (IsAlive) {		
+			getDamaged = true;
+			damageDirection = shootPosition - transform.position;
+			damageDirection.Normalize ();		
+		} 
+		else
+		{		
+			if (GameManager.gm != null) {	
+				GameManager.gm.AddScore (killScore);
+			}
+		}
+
+		if (enemyHurtAudio != null)				
+			AudioSource.PlayClipAtPoint (enemyHurtAudio, transform.position);
+	}
+		
+}
+
+```
+
+**11.游戏管理器(GameManager)**
+
+游戏管理器是整个架构中核心的部分，管理着整个游戏逻辑，属于MVC架构中的Controller控制器，代码篇幅略长，这里只展示了游戏管理器的主要功能：
+
+管理游戏状态（游戏进行中/胜利/失败）
+
+```
+public enum GameState 				
+	{Playing,GameOver,Winning};
+```
+
+管理玩家积分
+
+```
+public void AddScore(int value){
+		currentScore += value;
+	}
+```
+
+显示游戏状态（玩家生命值与玩家得分）
+
+```
+scoreText.text = "得 分 ： " + currentScore;	
+if(gm.playerHealth!=null)
+	healthSlider.value = gm.playerHealth.currentHealth;	
+currentTime = Time.time - startTime;				
+timeText.text = "战 斗 时 间 ： " + currentTime.ToString ("0.00");	
+if (mobileControlRigCanvas != null)					
+	mobileControlRigCanvas.SetActive (true);
+```
+
+**12.场景对象交互**
+
+使用触发器Trigger实现玩家与场景中对象的交互，OnTriggerEnter,OnTriggerExit和OnTriggerStay分别会在其他对象进入，离开和停留与触发器范围时被调用。
+
+1. 收集物品：
+
+```
+using UnityEngine;
+using System.Collections;
+
+public class PickUpCollect: MonoBehaviour {
+
+	public enum PickUpType { score, health };	
+	public PickUpType pickUpType;				
+	public int value1 = 2;						
+	public int value2 = 10;
+	public AudioClip collectedAudio;			
+
+
+	void OnTriggerEnter(Collider collider){
+		if (collider.gameObject.tag == "Player") {	
+			if (GameManager.gm != null) 		
+			{
+				if (pickUpType == PickUpType.score) {
+					
+					GameManager.gm.AddScore (value1);
+					GameManager.gm.SubtractCoinNum ();
+				}	
+				else if(pickUpType==PickUpType.health)	
+					GameManager.gm.PlayerAddHealth (value2);
+			}
+			if (collectedAudio!=null)	
+				AudioSource.PlayClipAtPoint (collectedAudio, transform.position);
+			Destroy(gameObject);		
+		}
+	}
+}
+
+```
+
+2. 开关门：
+
+```
+using UnityEngine;
+using System.Collections;
+
+public class DoorTrigger : MonoBehaviour {
+	[SerializeField] private GameObject target;
+
+	void OnTriggerEnter(Collider collider){
+		if (collider.gameObject.tag == "Player") {
+			target.SendMessage ("Activate");
+		}
+	}
+}
+
+```
+
+```
+using UnityEngine;
+using System.Collections;
+
+public class DoorOpenDevice : MonoBehaviour {
+	public string animation;
+	private Animation anim;
+	private bool _open;
+	public void Start(){
+		anim = GetComponent<Animation> ();
+	}
+	public void Activate(){
+		if (!_open) {
+			anim.Play (animation);
+			_open = true;
+		}
+	}
+}
+
+```
+
+**13.动画系统**
+
+Mecanim是Unity一个丰富且精密的动画系统，它提供了：
+
+为人形觉得提供的简易工作流和动画创建能力。
+
+Retargeting（动画重定向）功能，即把动画从一个角色模型应用到另一个角色模型上。
+
+针对Animation Clips（动画片段）的简单工作流。
+
+一个用于管理动画间复杂交互作用的可视化编程工具。
+
+通过不同逻辑来控制不同身体部位运动的能力。
+
+**动画片段与角色替身（Animation Clip & Avatar）:**
+
+本次通过导入丧尸、玩家的fbx文件后，通过动画片段剪辑确定了不同的动画片段，并在动画状态机的相应状态处绑定好动画片段，通过代码便可控制动画的播放
+
+**动画状态机：**
+
+Animator组件：用于控制游戏对象的动画。
+
+玩家动画状态机：
+
+![玩家动画状态机](https://github.com/SweeneyChoi/Doomsday-FPS/blob/master/Image/playerFSM.png)
+
+丧尸动画状态机：
+
+![丧尸动画状态机](https://github.com/SweeneyChoi/Doomsday-FPS/blob/master/Image/sangshiFSM.png)
+
+**14.粒子系统**
+
+粒子是在三维空间中渲染的二维图像，用于表现爆炸、 烟、 火、 水等粒子效果。
+
+Unity的Shuriken粒子系统采用模块化的管理方式，使得个性化的粒子模块配合粒子曲线编辑器，使用户更容易创造出各种缤纷复杂的粒子效果。
+
+使用代码控制粒子的播放：
+
+```
+using UnityEngine;
+using System.Collections;
+
+public class ParticleController : MonoBehaviour {
+
+	private ParticleSystem ps;	
+
+	void Start(){
+		ps = GetComponent<ParticleSystem> ();	
+		ps.Play ();								
+		Destroy (gameObject, ps.duration);		
+	}
+}
+
+```
+
+**15.其他特效**
+
+1. 玩家受伤血晕效果：
+
+![血晕效果](https://github.com/SweeneyChoi/Doomsday-FPS/blob/master/Image/effect4.png)
+
+玩家受到攻击时，使用代码更改Color属性的Alpha透明度：
+
+玩家受伤后设置HurtImage的颜色为不透明红色
+
+```
+public void PlayerTakeDamage(int value){
+		if (playerHealth != null)
+			playerHealth.TakeDamage(value);
+		hurtImage.color = flashColor;
+	}
+```
+
+使用Color的Lerp函数（线性插值）控制HurtImage颜色从不透明红色到透明无色的渐变：
+
+```
+hurtImage.color = Color.Lerp (
+			hurtImage.color, 
+			Color.clear, 
+			flashSpeed * Time.deltaTime
+		);
+
+```
+
+2. 丧尸狂暴效果：使用shader实现丧尸周身泛着血红的效果：
+
+![狂暴效果](https://github.com/SweeneyChoi/Doomsday-FPS/blob/master/Image/effect5.png)
+
+```
+Shader "Custom/body_shader" {
+	Properties {
+		_Color ("Color", Color) = (1,1,1,1)
+		_MainTex ("Albedo (RGB)", 2D) = "white" {}
+		_Glossiness ("Smoothness", Range(0,1)) = 0.5
+		_Metallic ("Metallic", Range(0,1)) = 0.0
+      	_BumpMap ("Bumpmap", 2D) = "bump" {}
+      	_RimColor ("Rim Color", Color) = (0.26,0.19,0.16,0.0)
+      	_RimPower ("Rim Power", Range(0.5,8.0)) = 3.0
+      	_RimBool ("EnableRim", Range(0.0,1.0)) = 0.0
+	}
+	SubShader {
+		Tags { "RenderType"="Opaque" }
+		LOD 200
+		
+		CGPROGRAM
+
+		#pragma surface surf Standard fullforwardshadows
+
+
+		#pragma target 3.0
+
+		sampler2D _MainTex;
+
+		struct Input {
+			float2 uv_MainTex;
+        	float2 uv_BumpMap;
+          	float3 viewDir;
+		};
+
+		half _Glossiness;
+		half _Metallic;
+		fixed4 _Color;
+      	sampler2D _BumpMap;
+      	float4 _RimColor;
+      	float _RimPower;
+      	float _RimBool;
+		void surf (Input IN, inout SurfaceOutputStandard o) {
+
+			fixed4 c = tex2D (_MainTex, IN.uv_MainTex) * _Color;
+			o.Albedo = c.rgb;
+
+			o.Metallic = _Metallic;
+			o.Smoothness = _Glossiness;
+			o.Alpha = c.a;
+        	o.Normal = UnpackNormal (tex2D (_BumpMap, IN.uv_BumpMap));
+        	if(_RimBool >0.5)
+        	{
+          		half rim = 1.0 - saturate(dot (normalize(IN.viewDir), o.Normal));
+          		o.Emission = _RimColor.rgb * pow (rim, _RimPower);
+          	}else{
+          		o.Emission = float4(0,0,0,1);
+          	}
+		}
+		ENDCG
+	}
+	FallBack "Diffuse"
+}
+```
+
+在丧尸AI代码的搜索、追踪和攻击状态处理函数中调用ZombieRender的SetCrazy方法，使丧尸进如狂暴状态；在丧尸AI代码的游荡和死亡抓鬼太处理函数中调用ZombieRender的SetNormal函数，使丧尸恢复正常。
+
+```
+public void SetCrazy()
+	{
+
+		for(int i=0;i<rendCnt;i++)
+			rends [i].material.SetFloat ("_RimBool", 1.0f);
+	}
+
+
+	public void SetNormal()
+	{
+
+		for(int i=0;i<rendCnt;i++)
+			rends [i].material.SetFloat ("_RimBool", 0.0f);
+	}
+```
+
+**16.uGUI系统**
+
+GUI是 Graphical User Interface 图形用户界面的简称，是一种人与计算机通信的界面的显示形式，允许用户使用鼠标等输入设备，操纵屏幕上的图标或者菜单，调用文件、 启动程序或执行其他一些日常任务。 在游戏的开发过程中，游戏界面设计具有非常重要的作用，玩家打开游戏后的第一个接触的游戏元素，通常就是游戏的 GUI， 而游戏 GUI 是否友好、 美观，在很大程度上影响玩家的游戏体验。
+
+新的uGUI 系统摒弃了之前旧版本 GUI 存在的问题，在一定程度上统一了 Unity 引擎中 UI 界面开发技术，使得 Unity 引擎在 UI 界面开发上趋于标准化，uGUI 凭借其在 Unity 引擎的紧密结合，快速、 灵活、 可视化的编程技术，强大、 易用的屏幕自适应等优点，广受 Unity 开发者的好评与使用。
+
+游戏界面的设计与实现在前面已经讲过，这里不再赘述，这里着重阐述界面数据的更新和移动平台UI设置：
+
+通过游戏管理器GameManager进行界面数据的更新：
+
+```
+scoreText.text = "得 分 ： " + currentScore;	
+if(gm.playerHealth!=null)
+	healthSlider.value = gm.playerHealth.currentHealth;	
+currentTime = Time.time - startTime;				
+timeText.text = "战 斗 时 间 ： " + currentTime.ToString ("0.00");	
+if (mobileControlRigCanvas != null)					
+	mobileControlRigCanvas.SetActive (true);
+```
+
+移动平台UI设置：
+
+本次采用Cross Platform Input实现跨平台输入UI：
+
+操纵杆控制玩家移动，使用JoyStick实现；![JoyStick](https://github.com/SweeneyChoi/Doomsday-FPS/blob/master/Image/joyStickIcon.png)
+
+触摸板（全透明）控制玩家转向，使用TouchPad实现；
+
+向上跳跃按钮控制玩家跳跃;![跳跃](https://github.com/SweeneyChoi/Doomsday-FPS/blob/master/Image/jumpIcon.png)
+
+子弹按钮控制玩家射击;![射击](https://github.com/SweeneyChoi/Doomsday-FPS/blob/master/Image/attackIcon.png)
+
+换枪按钮控制玩家更换枪械;![换枪](https://github.com/SweeneyChoi/Doomsday-FPS/blob/master/Image/huanqiangIcon.png)
+
+手电筒按钮控制玩家开/关手电筒.![手电筒](https://github.com/SweeneyChoi/Doomsday-FPS/blob/master/Image/flashlightIcon.png)
+
+以上均使用ButtonHandler实现。
+
+**17.游戏性能分析与性能优化：**
+
+使用Unity游戏性能分析工具Profile：
+
+![性能分析](https://github.com/SweeneyChoi/Doomsday-FPS/blob/master/Image/xingnengyouhua.png)
+
+我们可以看出：
+
+游戏性能瓶颈主要在一下两个方面：
+
+1. CPU计算能力
+
+2. 渲染（Rendering）效率
+
+针对这里两个方面对游戏进行性能优化。
+
+1. CPU优化：
+
+使用对象池技术，优化僵尸的创建与销毁过程。
+
+（1）创建一个数组或者链表作为对象池。实例化一组对象，把它们设置为未激活状态，放入对象池
+
+（2）如果需要创建对象，我们直接从对象池中取出一个未激活对象，激活该对象，设置相关操作，然后直接使用即可
+
+（3）如果需要销毁对象 只需禁用该对象，然后把它放入对象池即可
+
+```
+using UnityEngine;
+using System.Collections;
+
+public class ZombieGenerator : MonoBehaviour {
+
+
+
+	public Transform[] zombieSpawnTransform;	
+	public int maximumInstanceCount = 9;		
+	public float minGenerateTimeInterval = 5.0f;	
+	public float maxGenerateTimeInterval = 20.0f;	
+	public GameObject zombiePrefab;					
+
+	private float nextGenerationTime = 0.0f;		
+	private float timer = 0.0f;						
+	private GameObject[] instances;					
+	public static Vector3 defaultPosition = new Vector3(33, -6, -8);	
+ 
+	void Start () {
+
+		instances = new GameObject[maximumInstanceCount];
+
+		for(int i = 0; i < maximumInstanceCount; i++) {
+
+			GameObject zombie = Instantiate (zombiePrefab, 
+				defaultPosition, Quaternion.identity) as GameObject;
+
+			zombie.SetActive (false);
+
+			instances [i] = zombie;
+		}
+	}
+
+
+	private GameObject GetNextAvailiableInstance ()   {
+		for(var i = 0; i < maximumInstanceCount; i++) {
+			if(!instances[i].activeSelf)
+			{
+				return instances[i];
+			}
+		}
+		return null;
+	}
+
+	private bool generate(Vector3 position)
+	{
+
+		GameObject zombie = GetNextAvailiableInstance ();
+		if (zombie != null) {
+
+			zombie.SetActive (true);
+
+			zombie.GetComponent<ZombieAI> ().Born (position);
+			return true;
+		}
+		return false;
+	}
+
+	void Update () {   
+		if (GameManager.gm.gameState != GameManager.GameState.Playing)
+			return;
+		
+
+		if (timer > nextGenerationTime) {
+
+
+			int i = Random.Range(0, zombieSpawnTransform.Length);
+
+			generate (zombieSpawnTransform [i].position);
+
+			nextGenerationTime = Random.Range (minGenerateTimeInterval, maxGenerateTimeInterval);
+
+			timer = 0;
+		}
+		timer += Time.deltaTime;
+
+	}
+}
+
+```
+
+2. 渲染优化：
+
+（1）遮挡剔除技术（Occlusion Culling）: 摄像机视域内有很多被遮挡的物体 没有渲染的必要，我们可以通过"Occlusion Culling"遮挡剔除技术，剔除摄像机视锥内被遮挡的物体，提高渲染效率。
+
+![剔除](https://github.com/SweeneyChoi/Doomsday-FPS/blob/master/Image/tichu.png)
+
+（2）Draw Call 合并技术把具有相同材质的多个物体合并为一个物体，在一次 Draw Call 中完成绘制，从而提高性能。
+
+
+
+
+
 
 
 
