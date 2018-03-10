@@ -362,21 +362,26 @@ Unity 引擎中，Nav Mesh Agent 是配合导航网格使用的导航代理组�
 **9.丧尸AI**
 
 智能丧尸：
+
 能够根据自身情况，比如当前生命值、中枪与否和外部条件，比如僵尸周围是否有玩家采取合理的行动。
+
 ![丧尸](https://github.com/SweeneyChoi/Doomsday-FPS/blob/master/Image/sangshi1.png)
 
 AI基础：
+
 - 基本行为操控：靠近，远离，追逐，逃避……
 - 寻路能力：从游戏场景中的一个位置移动到另一个位置；
 - 感知能力：自身状态，听觉和视觉等感知能力；
 - 自主决策能力：根据自身状态和外部环境条件，做出合理的反应。
 
 实现寻路能力：
+
 通过Navigation导航系统实现搜索算法，使丧尸具有寻路能力。
 
 模拟丧尸的听觉和视觉的方法：
 1.触发器（Trigger）;
 2.向量计算(Vector)
+
 其中，向量计算的效率更高。
 
 实现丧尸自主决策能力：
@@ -388,11 +393,13 @@ AI基础：
 - 丧尸生命值变为0->丧尸进入死亡状态。
 
 高级丧尸状态机：
+
 ![丧尸状态机](https://github.com/SweeneyChoi/Doomsday-FPS/blob/master/Image/gaojisangshiluoji.png)
 
 实现丧尸的感知能力：
 - 外部世界：视觉、听觉；
 - 自身情况：生命值、是否中枪。
+
 实现方式：
 
 1．使用触发器Trigger进行感知：OnTriggerEnter,OnTriggerExit和OnTriggerStay分别会在其他对象进入，离开和停留与触发器范围时被调用。适合用于低阶丧尸的感知能力。
@@ -402,10 +409,13 @@ AI基础：
 
 2．使用向量计算：
 - 听觉的模拟：
+
 丧尸的听觉范围可以视为一个球体，该球体的中心是丧尸所在的位置，只要玩家位于该球体内部，我们就认为丧尸可以感知到玩家。
+
 ![听觉](https://github.com/SweeneyChoi/Doomsday-FPS/blob/master/Image/tingjue.png)
 
 - 视觉的模拟：
+
 丧尸的视觉范围使用丧尸眼睛正前方的一个圆锥体来模拟，只要玩家位于这个圆锥体内部，且不被遮挡，我们就认为丧尸看到了玩家。
 具体算法如下：
 1.使用 Vector3 的 Distance 函数，计算丧尸与玩家之间的距离。 如果该距离小于丧尸的视觉距离，进入下一步的判断；
@@ -413,6 +423,7 @@ AI基础：
 3.使用 Raycast 方法，从丧尸位置向玩家位置发射一条射线 如果该射线没有被其他物体遮挡，直接到达玩家所在的位置，说明丧尸可以看到玩家
 
 生命值感知和中枪感知：
+
 currentHP 把丧尸中枪时玩家所在的方向保存在 damageDirection 字段中，其它脚本读取 ZombieHealth 的 currentHP 和damageDirection 字段，可以获得丧尸的生命值和中枪情况。
 
 
