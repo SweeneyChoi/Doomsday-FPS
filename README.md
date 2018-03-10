@@ -109,9 +109,91 @@ public class MouseLook : MonoBehaviour {
 
 ```
 if (axes == RotationAxes.MouseX) {
-			transform.Rotate(0, CrossPlatformInputManager.GetAxis("Mouse X") * sensitivityHor, 0);
+	transform.Rotate(0, CrossPlatformInputManager.GetAxis("Mouse X") * sensitivityHor, 0);
 		}
 ```
+
+（3）垂直旋转：不能使用Rotate()函数，应该通过创建新的Vector3向量来设置新的localEulerAngles:
+
+```
+else if (axes == RotationAxes.MouseY) {
+			_rotationX -= CrossPlatformInputManager.GetAxis("Mouse Y") * sensitivityVert;
+			_rotationX = Mathf.Clamp(_rotationX, minimumVert, maximumVert);
+			
+			transform.localEulerAngles = new Vector3(_rotationX, transform.localEulerAngles.y, 0);
+		}
+```
+
+**2.玩家移动：**
+
+使用CharacterController组件来应用碰撞检测，并使用Move(movement)通过movement向量移动：
+
+```
+float deltaX = CrossPlatformInputManager.GetAxis ("Horizontal") * moveSpeed;
+float deltaZ = CrossPlatformInputManager.GetAxis ("Vertical") * moveSpeed;
+
+Vector3 movement = new Vector3 (deltaX, 0, deltaZ);
+movement = Vector3.ClampMagnitude (movement, moveSpeed);
+
+movement *= Time.deltaTime;
+movement = transform.TransformDirection (movement);
+_charController.Move (movement);
+```
+
+为玩家施加重力，以调整为走路而不是飞翔：需要声明一个中立变量并把这个重力变量赋值给Y轴：
+
+```
+public float gravity = -9.8f;
+movement.y = _vertSpeed;
+```
+
+最后，为了保持重力永远竖直向下，我们需要设置玩家身上的MouseLook仅仅为水平旋转，接着给camera对象添加一个MouseLook组件，并设置它为垂直旋转。因为camera的父对象是玩家对象，所以尽管它独立于玩家垂直旋转，但摄像机还是会跟着玩家做水平旋转。
+
+**3.玩家跳跃**
+
+使用射线投射检测玩家是否在地面上，如果判断为true，那么垂直速度的值重置为0，如果单击跳跃按钮，给玩家应用一个垂直方向的速度。由公式v=-gt,可知，垂直速度应该不断被重力减弱，最后反向，转而开始下降，跳跃就出现一条自然的弧线。
+
+使用射线投射检测地面引入了一个需要处理的新情况：光线投射没有检测角色下方的地面，但角色控制器正与地面碰撞。在这种情况下，代码应该让角色从边缘滑落，角色仍然会降落（因为它没有站立在地面上），但它也会从碰撞点推离（因为它需要从碰撞的站台一开胶囊）。那么，代码将用角色控制器来检测碰撞并通过将角色推离碰撞点来响应碰撞。
+
+```
+        bool hitGround = false;
+		RaycastHit hit;
+		if (_vertSpeed < 0 && Physics.Raycast(transform.position, Vector3.down, out hit)) {
+			float check = (_charController.height + _charController.radius) / 1.9f;
+			hitGround = hit.distance <= check;	
+			if (hitGround == false && anim != null)
+				anim.SetBool ("isJump", false);
+		}
+				
+		if (hitGround) {
+				if (CrossPlatformInputManager.GetButtonDown("Jump")) {
+				_vertSpeed = jumpSpeed;
+					if (anim != null)
+						anim.SetBool ("isJump", true);
+			} else {
+				_vertSpeed = minFall;
+					if(anim != null)
+						anim.SetBool ("isJump", false);
+			}
+		} else {
+			_vertSpeed += gravity * 5 * Time.deltaTime;
+			if (_vertSpeed < terminalVelocity) {
+				_vertSpeed = terminalVelocity;
+			}
+			if (_contact != null ) {	
+			}
+					
+			if (_charController.isGrounded) {
+				if (Vector3.Dot(movement, _contact.normal) < 0) {
+					movement = _contact.normal * moveSpeed;
+				} else {
+					movement += _contact.normal * moveSpeed;
+				}
+			}
+		}
+```
+
+
 
 
 
