@@ -95,20 +95,23 @@
 
 **1.鼠标观察**
 （1）使用枚举类型用于选择水平或垂直旋转：
-'''
+
+```
 public class MouseLook : MonoBehaviour {
 	public enum RotationAxes {
 		MouseXAndY = 0,
 		MouseX = 1,
 		MouseY = 2
 	}
-'''
+```
+
 （2）水平旋转：将旋转速度乘以轴向的值，旋转将响应鼠标的移动：
-'''
+
+```
 if (axes == RotationAxes.MouseX) {
 			transform.Rotate(0, CrossPlatformInputManager.GetAxis("Mouse X") * sensitivityHor, 0);
 		}
-'''
+```
 
 
 
