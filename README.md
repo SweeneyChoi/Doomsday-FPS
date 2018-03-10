@@ -20,9 +20,9 @@
 
 **物品收集：**
 
-1.血瓶:增加玩家HP；![血瓶](https://github.com/SweeneyChoi/Doomsday-FPS/blob/master/Image/blood.png)
+1. 血瓶:增加玩家HP；![血瓶](https://github.com/SweeneyChoi/Doomsday-FPS/blob/master/Image/blood.png)
 
-2.线索:增加玩家得分，玩家需集齐所有线索以逃出小镇。![线索](https://github.com/SweeneyChoi/Doomsday-FPS/blob/master/Image/key.png)
+2. 线索:增加玩家得分，玩家需集齐所有线索以逃出小镇。![线索](https://github.com/SweeneyChoi/Doomsday-FPS/blob/master/Image/key.png)
 
 **玩家得分：** 每个血瓶增加10点HP；每条线索得2分；每击杀一个丧尸得5分。
 
@@ -34,13 +34,13 @@
 
 该场景包含一下几个元素：
 
-1.标题：Doomsday，通过字体的加粗、放大、倾斜以及颜色设置为红色，显示在屏幕顶部的中央。
+1. 标题：Doomsday，通过字体的加粗、放大、倾斜以及颜色设置为红色，显示在屏幕顶部的中央。
 
-2.游戏面板：位于右边的蓝色透明面板，面板中包含开始、选项、退出三个游戏按钮。
+2. 游戏面板：位于右边的蓝色透明面板，面板中包含开始、选项、退出三个游戏按钮。
 
-3.左下角的TextField：标名了作者信息。
+3. 左下角的TextField：标名了作者信息。
 
-4.背景面板：位于所有元素最里面的背景图片
+4. 背景面板：位于所有元素最里面的背景图片
 
 **点击开始按钮，游戏面板切换到开始游戏面板**
 
@@ -60,13 +60,13 @@
 
 本面板包含以下几个元素：
 
-1.屏幕中央射击准星Sightbead
+1. 屏幕中央射击准星Sightbead
 
-2.左下角用Slider控件实现的玩家生命值血条
+2. 左下角用Slider控件实现的玩家生命值血条
 
-3.右上角用Text控件实现的TimeText和ScoreText,表示玩家战斗时间和得分
+3. 右上角用Text控件实现的TimeText和ScoreText,表示玩家战斗时间和得分
 
-4.左侧使用Image控件实现Joystick遥感，右侧使用Image控件实现玩家射击、跳跃、换枪、打开手电的按钮
+4. 左侧使用Image控件实现Joystick遥感，右侧使用Image控件实现玩家射击、跳跃、换枪、打开手电的按钮
 
 
 **游戏结束界面**
@@ -84,20 +84,20 @@
 
 #### 5.游戏特效设计
 
-1.枪口火焰特效，不同的枪具有不同的火焰效果：
+1. 枪口火焰特效，不同的枪具有不同的火焰效果：
 ![火焰特效1](https://github.com/SweeneyChoi/Doomsday-FPS/blob/master/Image/effect1.png)
 ![火焰特效2](https://github.com/SweeneyChoi/Doomsday-FPS/blob/master/Image/effect2.png)
 
-2.子弹特效：
+2. 子弹特效：
 ![子弹特效](https://github.com/SweeneyChoi/Doomsday-FPS/blob/master/Image/effect3.png)
 
-3.玩家受伤血晕特效：
+3. 玩家受伤血晕特效：
 ![血晕效果](https://github.com/SweeneyChoi/Doomsday-FPS/blob/master/Image/effect4.png)
 
-4.丧尸狂暴特效，丧尸发现玩家后变狂暴，周身泛着血红，使用shader实现：
+4. 丧尸狂暴特效，丧尸发现玩家后变狂暴，周身泛着血红，使用shader实现：
 ![丧尸狂暴特效](https://github.com/SweeneyChoi/Doomsday-FPS/blob/master/Image/effect5.png)
 
-5.车辆燃烧特效：
+5. 车辆燃烧特效：
 ![车辆燃烧特效](https://github.com/SweeneyChoi/Doomsday-FPS/blob/master/Image/effect6.png)
 
 ### 三、游戏实现
@@ -220,6 +220,7 @@ if (Physics.Raycast (ray, out hitInfo, shootingRange)) {
 **5.玩家生命值管理**
 
 startHealth表示初始生命值，currentHealth表示当前生命值，定义 isAlive 字段表示玩家是否存活。在 Update 函数中检测玩家是否存活 在 TakeDamage 函数中实现玩家扣血逻辑，在AddHealth函数中实现玩家加血逻辑。
+
 扣血函数：
 
 ```
@@ -273,13 +274,13 @@ startHealth表示初始生命值，currentHealth表示当前生命值，定义 i
 
 实现步骤：
 
-1.为玩家对象添加新的枪械模型；
+1. 为玩家对象添加新的枪械模型；
 
-2.为新的枪械模型设置正确的角色模型 IK；
+2. 为新的枪械模型设置正确的角色模型 IK；
 
-3.为新的枪械模型添加攻击脚本，设置攻击力、 攻击距离、 攻击速度和攻击音效等属性；
+3. 为新的枪械模型添加攻击脚本，设置攻击力、 攻击距离、 攻击速度和攻击音效等属性；
 
-4.为玩家添加换枪脚本，换枪脚本的武器列表用来记录玩家所有的枪械对象。
+4. 为玩家添加换枪脚本，换枪脚本的武器列表用来记录玩家所有的枪械对象。
 
 
 ```
@@ -400,8 +401,8 @@ AI基础：
 
 模拟丧尸的听觉和视觉的方法：
 
-1.触发器（Trigger）;
-2.向量计算(Vector)
+1. 触发器（Trigger）;
+2. 向量计算(Vector)
 
 其中，向量计算的效率更高。
 
@@ -423,12 +424,12 @@ AI基础：
 
 实现方式：
 
-1．使用触发器Trigger进行感知：OnTriggerEnter,OnTriggerExit和OnTriggerStay分别会在其他对象进入，离开和停留与触发器范围时被调用。适合用于低阶丧尸的感知能力。
+1. 使用触发器Trigger进行感知：OnTriggerEnter,OnTriggerExit和OnTriggerStay分别会在其他对象进入，离开和停留与触发器范围时被调用。适合用于低阶丧尸的感知能力。
 缺点：
 - 需要使用三维建模软件，制作出椎体网格来模拟视区域。这种方式较为麻烦，且不易维护。
 - 物理计算，尤其是MeshCollider网格碰撞体的碰撞计算，开销较大，会降低游戏性能。
 
-2．使用向量计算：
+2. 使用向量计算：
 - 听觉的模拟：
 
 丧尸的听觉范围可以视为一个球体，该球体的中心是丧尸所在的位置，只要玩家位于该球体内部，我们就认为丧尸可以感知到玩家。
@@ -441,11 +442,11 @@ AI基础：
 
 具体算法如下：
 
-1.使用 Vector3 的 Distance 函数，计算丧尸与玩家之间的距离。 如果该距离小于丧尸的视觉距离，进入下一步的判断；
+1. 使用 Vector3 的 Distance 函数，计算丧尸与玩家之间的距离。 如果该距离小于丧尸的视觉距离，进入下一步的判断；
 
-2.计算出丧尸所在的位置到玩家所在位置的向量 direction 然后使用 Vector3 的 Angle 方法，计算 direction 向量与丧尸的 forward 向量之间的夹角，如果该夹角小于丧尸视觉圆锥体张角的一半，就说明玩家位于丧尸的视觉圆锥体之内，进入下一步判断；
+2. 计算出丧尸所在的位置到玩家所在位置的向量 direction 然后使用 Vector3 的 Angle 方法，计算 direction 向量与丧尸的 forward 向量之间的夹角，如果该夹角小于丧尸视觉圆锥体张角的一半，就说明玩家位于丧尸的视觉圆锥体之内，进入下一步判断；
 
-3.使用 Raycast 方法，从丧尸位置向玩家位置发射一条射线 如果该射线没有被其他物体遮挡，直接到达玩家所在的位置，说明丧尸可以看到玩家
+3. 使用 Raycast 方法，从丧尸位置向玩家位置发射一条射线 如果该射线没有被其他物体遮挡，直接到达玩家所在的位置，说明丧尸可以看到玩家
 
 生命值感知和中枪感知：
 
