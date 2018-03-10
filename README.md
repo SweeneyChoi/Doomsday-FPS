@@ -1,6 +1,6 @@
 # 基于Unity3D的末日题材FPS手机游戏的设计与实现
 
-## **关键词：**Unity3D；Android；FPS； 
+## 关键词：Unity3D；Android；FPS； 
 
 ### 一、开发环境
 - Unity 2017.2.1f1 (64-bit)
@@ -13,10 +13,15 @@
 
 #### 2.游戏策划
 **玩家控制：**玩家通过屏幕上的Joystick遥感控制角色的行走，通过触摸屏控制视角方向，通过屏幕中央的准心瞄准丧尸射击，点击屏幕上的换枪按钮实现换枪操作，点击屏幕上的手电筒按钮开启手电筒。
+
 **游戏玩法：**一开始玩家处于一座充满丧尸的封闭小镇中无法出去，玩家必须克服内心的恐惧，在丧尸随时出没的小镇里找齐所有线索破坏小镇大门，逃离小镇。
+
 **游戏胜利与失败：**玩家集齐线索摧毁小镇大门后，逃出小镇，游戏胜利，若被丧尸攻击至血量减为0，则玩家死亡。最后，游戏通过玩家胜利与否以及击杀或物品收集得分为玩家排名，显示积分榜。
+
 **物品收集：**
 1.血瓶:增加玩家HP；![血瓶](https://github.com/SweeneyChoi/Doomsday-FPS/blob/master/Image/blood.png)
-2.线索：：增加玩家得分，玩家需集齐所有线索以逃出小镇。![线索](https://github.com/SweeneyChoi/Doomsday-FPS/blob/master/Image/key.png)
+
+2.线索:增加玩家得分，玩家需集齐所有线索以逃出小镇。![线索](https://github.com/SweeneyChoi/Doomsday-FPS/blob/master/Image/key.png)
+
 **玩家得分：**每个血瓶增加10点HP；每条线索得2分；每击杀一个丧尸得5分。
 
